@@ -1,0 +1,72 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - auth_service
+      - user_service
+      - owner_service
+
+  user_service:
+    build:
+      context: ./user_service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - RABBIT_HOST=rabbitmq
+    volumes:
+      - ./user_service:/app
+      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+
+  auth_service:
+    build:
+      context: ./auth_service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - RABBIT_HOST=rabbitmq
+    volumes:
+      - ./auth_service:/app
+      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+
+  owner_service:
+    build:
+      context: ./owner_service
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - RABBIT_HOST=rabbitmq
+      - RABBIT_PORT=5672
+      - RABBIT_USER=user
+      - RABBIT_PASSWORD=pass
+      - ORDER_QUEUE=order_queue
+    volumes:
+      - ./owner_service:/app
+      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=pass
