@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-import asyncio
+
 
 DATABASE_URL = "sqlite+aiosqlite:////home/root/dev/OperationBackend/operation.sqlite"
 
@@ -22,4 +22,3 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 # Запускаем функцию инициализации базы данных
-asyncio.run(init_db())

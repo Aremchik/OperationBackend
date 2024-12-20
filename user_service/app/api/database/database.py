@@ -22,4 +22,3 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 # Запускаем функцию инициализации базы данных
-asyncio.run(init_db())
