@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   nginx:
     image: nginx:latest
@@ -8,7 +10,7 @@ services:
     depends_on:
       - auth_service
       - user_service
-      - owner_service
+      - team_service
 
   user_service:
     build:
@@ -16,11 +18,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - DATABASE_URL=sqlite:////app/operation.sqlite
       - RABBIT_HOST=rabbitmq
     volumes:
       - ./user_service:/app
-      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
@@ -32,31 +34,27 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - DATABASE_URL=sqlite:////app/operation.sqlite
       - RABBIT_HOST=rabbitmq
     volumes:
       - ./auth_service:/app
-      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
       - rabbitmq
 
-  owner_service:
+  team_service:
     build:
-      context: ./owner_service
+      context: ./team_service
     ports:
       - "8002:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/all_food_db.sqlite
+      - DATABASE_URL=sqlite:////app/operation.sqlite
       - RABBIT_HOST=rabbitmq
-      - RABBIT_PORT=5672
-      - RABBIT_USER=user
-      - RABBIT_PASSWORD=pass
-      - ORDER_QUEUE=order_queue
     volumes:
-      - ./owner_service:/app
-      - ./all_food_db.sqlite:/app/all_food_db.sqlite
+      - ./team_service:/app
+      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
