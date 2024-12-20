@@ -1,9 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from api.routers import user
-from api.database.database import engine, Base  # Убедитесь, что вы импортировали правильные объекты
+from app.api.routers import user
+from app.api.database.database import engine, Base  # Убедитесь, что вы импортировали правильные объекты
 import threading
-from api.rabbitmq.consumer import start_consuming
+from app.api.rabbitmq.consumer import start_consuming
 
 def start_rabbitmq_listener():
     threading.Thread(target=start_consuming, daemon=True).start()
