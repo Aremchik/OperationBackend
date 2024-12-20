@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Устанавливаем зависимости
-RUN pip3 install --no-cache-dir -r requirements.txt --upgrade pip setuptools wheel
+RUN apt-get update && apt-get install -y build-essential libffi-dev gcc pip3 install --no-cache-dir -r requirements.txt --upgrade pip setuptools wheel
 
 # Копируем исходный код
 COPY . .
