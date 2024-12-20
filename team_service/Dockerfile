@@ -11,10 +11,7 @@ COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Копируем исходный код
-COPY . /app
-
-# Настраиваем PYTHONPATH
-ENV PYTHONPATH=/app
+COPY . .
 
 # Открываем порт для FastAPI
 EXPOSE 8000
