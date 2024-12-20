@@ -1,11 +1,11 @@
 # auth_service\app\api\routers\auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.database.database import get_db
+from app.api.database.database import get_db
 from sqlalchemy.future import select 
-from api.model.model import UserModel
-from api.schemas import UserSchema
-from api.utils.jwt import create_access_token, verify_token
+from app.api.model.model import UserModel
+from app.api.schemas import UserSchema
+from app.api.utils.jwt import create_access_token, verify_token
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from uuid import uuid4

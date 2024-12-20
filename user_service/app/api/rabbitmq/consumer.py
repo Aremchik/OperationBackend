@@ -2,8 +2,8 @@
 import pika
 import json
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.database.database import get_db
-from api.model.model import UserModel
+from app.api.database.database import get_db
+from app.api.model.model import UserModel
 
 RABBITMQ_URL = "amqp://guest:guest@localhost:5672/"
 

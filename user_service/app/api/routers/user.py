@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.database.database import get_db
-from api.model.model import UserModel
-from api.schemas import UserSchema
+from app.api.database.database import get_db
+from app.api.model.model import UserModel
+from app.api.schemas import UserSchema
 from pydantic import BaseModel
 
 router = APIRouter()

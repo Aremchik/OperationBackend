@@ -2,9 +2,9 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
-from api.database.database import get_db  # Импорт вашей базы данных
-from api.model.model import UserModel, TeamModel, TeamMembers  # Ваши модели
-from api.schemas import UserSchema, TeamSchema, CreateTeamSchema  # Ваши схемы
+from app.api.database.database import get_db  # Импорт вашей базы данных
+from app.api.model.model import UserModel, TeamModel, TeamMembers  # Ваши модели
+from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema  # Ваши схемы
 from rabbitmq.producer import send_message
 
 app = FastAPI()

@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-from api.database.database import Base
+from app.api.database.database import Base
 
 class UserModel(Base):
     __tablename__ = "users"
