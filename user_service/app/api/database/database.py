@@ -2,9 +2,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-import asyncio
 
-DATABASE_URL = "sqlite+aiosqlite:///D:/prod/Prilo/Labs/kursach/operation.sqlite"
+
+DATABASE_URL = "sqlite:////home/root/dev/OperationBackend/operation.sqlite"
 
 Base = declarative_base()
 
