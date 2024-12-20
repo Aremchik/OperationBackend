@@ -11,10 +11,13 @@ COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Копируем исходный код
-COPY . .
+COPY . /app
+
+# Настраиваем PYTHONPATH
+ENV PYTHONPATH=/app
 
 # Открываем порт для FastAPI
 EXPOSE 8000
 
 # Запускаем приложение
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
