@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 
 
-DATABASE_URL = "sqlite:////home/root/dev/OperationBackend/operation.sqlite"
+DATABASE_URL = "sqlite+aiosqlite:////home/root/dev/OperationBackend/operation.sqlite"
 
 Base = declarative_base()
 
