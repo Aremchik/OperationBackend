@@ -2,7 +2,7 @@
 import pika
 import json
 
-RABBITMQ_URL = "amqp://guest:guest@localhost:5672/"
+RABBITMQ_URL = "amqp://user:pass@rabbitmq:5672/"
 
 def send_message(exchange: str, routing_key: str, message: dict):
     connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
