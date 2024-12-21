@@ -40,7 +40,7 @@ async def get_team(db: AsyncSession, team_id: str):
     return result.scalar_one_or_none()
 
 @router.post("/register", response_model=UserSchema)
-async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
     existing_user = await get_user(db, user.username)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")

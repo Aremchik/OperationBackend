@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-class UserCreate(BaseModel):
+class UserSchema(BaseModel):
     username: str
     name: str
     email: str
