@@ -11,17 +11,19 @@ class TeamSchema(BaseModel):
     class Config:
         orm_mode = True
 
-class UserCreate(BaseModel):
+class UserSchema(BaseModel):
+    id: str
     username: str
     name: str
     email: str
     password: str
-    birthday: str  # Дата рождения
-    team_id: Optional[str] = None  # Опциональное поле team_id, по умолчанию None
+    status: int
+    birthday: datetime
+    created_at: datetime
+    team: Optional[str] = None  # Добавлено поле team с значением None по умолчанию
 
     class Config:
         orm_mode = True
-
 
 class CreateTeamSchema(BaseModel):
     name: str
