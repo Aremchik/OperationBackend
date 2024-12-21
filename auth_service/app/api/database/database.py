@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 
 # Измените URL базы данных на PostgreSQL
-DATABASE_URL = "postgresql+asyncpg://your_username:your_password@localhost:5432/your_database"
+DATABASE_URL = "postgresql+asyncpg://postgres:password@postgres:5432/postgres"
 
 Base = declarative_base()
 
