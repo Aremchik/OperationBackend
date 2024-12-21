@@ -18,15 +18,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/operation.sqlite
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres
       - RABBIT_HOST=rabbitmq
     volumes:
       - ./user_service:/app
-      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
       - rabbitmq
+      - postgres
 
   auth_service:
     build:
@@ -34,15 +34,15 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/operation.sqlite
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres
       - RABBIT_HOST=rabbitmq
     volumes:
       - ./auth_service:/app
-      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
       - rabbitmq
+      - postgres
 
   team_service:
     build:
@@ -50,15 +50,15 @@ services:
     ports:
       - "8002:8000"
     environment:
-      - DATABASE_URL=sqlite:////app/operation.sqlite
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres
       - RABBIT_HOST=rabbitmq
     volumes:
       - ./team_service:/app
-      - ./operation.sqlite:/app/operation.sqlite
     env_file:
       - .env
     depends_on:
       - rabbitmq
+      - postgres
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -68,3 +68,19 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=pass
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:

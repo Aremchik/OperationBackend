@@ -9,9 +9,9 @@ class UserSchema(BaseModel):
     email: str
     password: str
     status: int
-    birthday: datetime
+    birthday: Optional[datetime] = None
     created_at: datetime
-    team: Optional[str] = None  # Добавлено поле team с значением None по умолчанию
+    team: Optional[str] = None
 
     class Config:
         orm_mode = True
