@@ -1,25 +1,30 @@
+# Используем Python образ
 FROM python:3.12-slim
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Установка необходимых зависимостей
-RUN apt-get update && apt-get install -y \
+# Копируем файлы зависимостей
+COPY requirements.txt requirements.txt
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libffi-dev \
-    libssl-dev \
     gcc \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем зависимости и устанавливаем их
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Устанавливаем и обновляем pip, setuptools, wheel
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 
-# Копируем приложение
+# Установка Python-зависимостей
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Копируем исходный код
 COPY . .
 
-# Открываем порт
+# Открываем порт для FastAPI
 EXPOSE 8000
 
-# Запуск приложения
+# Запускаем приложение
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
