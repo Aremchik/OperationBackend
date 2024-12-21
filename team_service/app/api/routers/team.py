@@ -5,7 +5,7 @@ from typing import List
 from app.api.database.database import get_db  # Импорт вашей базы данных
 from app.api.model.model import UserModel, TeamModel, TeamMembers  # Ваши модели
 from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema  # Ваши схемы
-from rabbitmq.producer import send_message
+
 
 app = FastAPI()
 router = APIRouter()
@@ -98,15 +98,7 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
     await db.refresh(user)
 
     # Отправка события в RabbitMQ
-    send_message(
-        exchange="team_exchange",
-        routing_key="team.user_update",
-        message={
-            "action": "add_user",
-            "user_id": user.id,
-            "team_id": team_id
-        }
-    )
+   
 
     return user
 
