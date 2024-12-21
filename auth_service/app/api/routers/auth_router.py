@@ -57,13 +57,14 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
         email=user.email,
         password=hashed_password,
         birthday=birthday,  # Добавляем дату рождения
-        team_id=user.team_id  # Если team_id не передан, то будет None
+        team_id=user.team_id,  # Устанавливаем team_id, которое может быть None
     )
-    
+
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     return new_user
+
 
 
 @router.post("/login", response_model=Token)

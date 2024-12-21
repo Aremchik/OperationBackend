@@ -2,16 +2,13 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-class UserSchema(BaseModel):
-    id: str
+class UserCreate(BaseModel):
     username: str
     name: str
     email: str
     password: str
-    status: int
-    birthday: Optional[datetime] = None
-    created_at: datetime
-    team: Optional[str] = None
+    birthday: str  # Дата рождения
+    team_id: Optional[str] = None  # Опциональное поле team_id, по умолчанию None
 
     class Config:
         orm_mode = True

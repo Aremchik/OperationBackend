@@ -11,18 +11,21 @@ from app.api.database.database import Base
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
-    username = Column(String, unique=True, index=True)
-    name = Column(String)
-    email = Column(String)
-    password = Column(String)
-    status = Column(Integer)
-    birthday = Column(TIMESTAMP)
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # UUID для id
+    username = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
+    birthday = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    # Убедитесь, что team_id может быть NULL
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
-    team_id = Column(UUID, ForeignKey('teams.id'))  # ссылка на команду
-    
-    team = relationship("TeamModel", back_populates="members_list")  # связь с командой
+    # Связь с командой (backref с уникальным именем)
+    team = relationship("TeamModel", backref="team_members", lazy="dynamic")
+
 
 
 
