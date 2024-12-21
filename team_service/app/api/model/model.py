@@ -1,13 +1,15 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 import uuid
 from app.api.database.database import Base
 
+# Модель пользователя
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # UUID для id
     username = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
@@ -15,28 +17,29 @@ class UserModel(Base):
     status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
     birthday = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
-
-    # Поле team с ForeignKey
-    team = Column(String, ForeignKey("teams.id"), nullable=True)
     
-    # Связь с TeamModel
-    team_relation = relationship("TeamModel", back_populates="users")
+    # Добавление ссылки на команду с использованием UUID
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
+    
+    # Связь с командой (backref с уникальным именем)
+    team = relationship("TeamModel", backref="team_members", lazy="dynamic")
 
 
-
+# Модель команды
 class TeamModel(Base):
     __tablename__ = "teams"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # UUID для id
     name = Column(String, nullable=False)
     created = Column(DateTime, server_default=func.now(), nullable=False)
 
-    # Связь с UserModel
-    users = relationship("UserModel", back_populates="team_relation")
+    # Связь с пользователями
+    members = relationship("UserModel", backref="user_team", lazy="dynamic")
 
 
-class TeamMembers(Base):
+# Модель для связей участников команды
+class TeamMemberModel(Base):
     __tablename__ = "team_members"
 
-    team_id = Column(String, ForeignKey('teams.id'), primary_key=True)
-    user_id = Column(String, ForeignKey('users.id'), primary_key=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
