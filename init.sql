@@ -14,10 +14,10 @@ CREATE TABLE users (
     status INTEGER,
     birthday TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    team UUID,
+    team_id UUID,  
     PRIMARY KEY (id),
     UNIQUE (username),
-    FOREIGN KEY (team) REFERENCES teams (id)
+    FOREIGN KEY (team_id) REFERENCES teams (id) 
 );
 
 CREATE TABLE team_members (
