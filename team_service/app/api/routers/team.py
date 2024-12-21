@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
 from app.api.database.database import get_db  # Импорт вашей базы данных
-from app.api.model.model import UserModel, TeamModel, TeamMembers  # Ваши модели
+from app.api.model.model import UserModel, TeamModel, TeamMemberModel
 from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema  # Ваши схемы
 
 
@@ -21,16 +21,15 @@ async def get_all_teams(db: AsyncSession = Depends(get_db)):
     if not teams:
         raise HTTPException(status_code=404, detail="No teams found")
 
-    # Запрашиваем участников для каждой команды
+    # Запрашиваем участников для каждой команды через связь с TeamMemberModel
     for team in teams:
         team_members_query = await db.execute(
-            select(UserModel.username).join(TeamMembers).where(TeamMembers.team_id == team.id)
+            select(UserModel.username).join(TeamMemberModel).where(TeamMemberModel.team_id == team.id)
         )
         team.members = team_members_query.scalars().all()  # Заполняем поле members
 
     # Возвращаем все команды с участниками
     return teams
-
 
 
 # Эндпоинт для создания команды
@@ -58,14 +57,14 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
 
     # Добавляем участников в команду
     for user in users:
-        new_team_member = TeamMembers(team_id=new_team.id, user_id=user.id)
+        new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user.id)
         db.add(new_team_member)
 
     await db.commit()
 
-    # Получаем всех участников команды через связь с таблицей TeamMembers
+    # Получаем всех участников команды через связь с таблицей TeamMemberModel
     team_members_query = await db.execute(
-        select(UserModel.username).join(TeamMembers).where(TeamMembers.team_id == new_team.id)
+        select(UserModel.username).join(TeamMemberModel).where(TeamMemberModel.team_id == new_team.id)
     )
     team_members = team_members_query.scalars().all()
 
@@ -74,9 +73,6 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
 
     # Возвращаем команду с участниками
     return new_team
-
-
-
 
 
 # Добавление пользователя в команду
@@ -92,15 +88,14 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    new_team_member = TeamMembers(team_id=team.id, user_id=user.id)
+    # Добавляем пользователя в таблицу TeamMemberModel
+    new_team_member = TeamMemberModel(team_id=team.id, user_id=user.id)
     db.add(new_team_member)
     await db.commit()
     await db.refresh(user)
 
-    # Отправка события в RabbitMQ
-   
-
     return user
+
 
 # Удаление пользователя из команды
 @router.delete("/users/{username}/team/{team_id}", response_model=UserSchema)
@@ -111,7 +106,7 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
         raise HTTPException(status_code=404, detail="User not found")
 
     team_member_query = await db.execute(
-        select(TeamMembers).where(TeamMembers.user_id == user.id, TeamMembers.team_id == team_id)
+        select(TeamMemberModel).where(TeamMemberModel.user_id == user.id, TeamMemberModel.team_id == team_id)
     )
     team_member = team_member_query.scalar_one_or_none()
     if not team_member:
@@ -132,10 +127,10 @@ async def get_user_team(username: str, db: AsyncSession = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if not user.team:
+    if not user.team_id:
         raise HTTPException(status_code=404, detail="User does not belong to any team")
 
-    team_query = await db.execute(select(TeamModel).where(TeamModel.id == user.team))
+    team_query = await db.execute(select(TeamModel).where(TeamModel.id == user.team_id))
     team = team_query.scalar_one_or_none()
 
     if not team:
