@@ -19,12 +19,13 @@ class UserModel(Base):
     status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
     birthday = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
-
-    # Убедитесь, что team_id может быть NULL
+    
+    # Ссылка на команду с использованием UUID
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
-    # Связь с командой (backref с уникальным именем)
-    team = relationship("TeamModel", backref="team_members", lazy="dynamic")
+    # Измените это на обычное отношение без lazy="dynamic"
+    team = relationship("TeamModel", backref="team_members")
+
 
 
 
@@ -33,11 +34,13 @@ class UserModel(Base):
 class TeamModel(Base):
     __tablename__ = "teams"
 
-    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
-    name = Column(String)
-    created = Column(TIMESTAMP, default=datetime.utcnow)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # UUID для id
+    name = Column(String, nullable=False)
+    created = Column(DateTime, server_default=func.now(), nullable=False)
 
-    members_list = relationship("UserModel", back_populates="team")  # связь с пользователями
+    # Связь с пользователями через обратную связь
+    members = relationship("UserModel", backref="user_team", lazy="select")
+
 
 
 
