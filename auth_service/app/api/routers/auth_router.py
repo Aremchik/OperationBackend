@@ -48,11 +48,6 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     # Преобразуем строку с датой в объект datetime
     birthday = datetime.fromisoformat(user.birthday[:-1])  # Удаляем 'Z'
 
-    # Проверяем, существует ли команда
-    team = await get_team(db, user.team_id)
-    if not team:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Team does not exist")
-
     hashed_password = pwd_context.hash(user.password)
 
     new_user = UserModel(
@@ -62,13 +57,14 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
         email=user.email,
         password=hashed_password,
         birthday=birthday,  # Добавляем дату рождения
-        team_id=user.team_id,  # Связываем с командой
+        team_id=user.team_id  # Если team_id не передан, то будет None
     )
     
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     return new_user
+
 
 @router.post("/login", response_model=Token)
 async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
