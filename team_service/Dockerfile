@@ -11,7 +11,9 @@ COPY requirements.txt requirements.txt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libffi-dev \
+    make \
     gcc \
+    librabbitmq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем и обновляем pip, setuptools, wheel
