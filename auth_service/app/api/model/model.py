@@ -4,7 +4,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 import uuid
-from datetime import datetime
 from app.api.database.database import Base
 
 # Модель пользователя
@@ -21,10 +20,11 @@ class UserModel(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     
     # Ссылка на команду с использованием UUID
-    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)  # Можно оставлять пустым
     
-    # Измените это на обычное отношение без lazy="dynamic"
+    # Связь с командой
     team = relationship("TeamModel", backref="team_members")
+
 
 
 
