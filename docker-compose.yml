@@ -59,6 +59,9 @@ services:
     depends_on:
       - rabbitmq
       - postgres
+    command: >
+      sh -c "sleep 10 &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   rabbitmq:
     image: rabbitmq:3-management
