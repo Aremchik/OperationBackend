@@ -1,38 +1,41 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from sqlalchemy.types import TIMESTAMP
+import uuid
+from datetime import datetime
 from app.api.database.database import Base
 
 # Модель пользователя
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, index=True)
-    username = Column(String, nullable=False, unique=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    password = Column(String, nullable=False)
-    status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
-    birthday = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
+    username = Column(String, unique=True, index=True)
+    name = Column(String)
+    email = Column(String)
+    password = Column(String)
+    status = Column(Integer)
+    birthday = Column(TIMESTAMP)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
     
-    # Изменим имя свойства связи на 'team_association', чтобы избежать конфликта
-    team_id = Column(String, ForeignKey("teams.id"), nullable=True)
+    team_id = Column(UUID, ForeignKey('teams.id'))  # ссылка на команду
     
-    # Обратная связь
-    team = relationship("TeamModel", backref="members", lazy="dynamic")
+    team = relationship("TeamModel", back_populates="members_list")  # связь с командой
+
 
 
 # Модель команды
 class TeamModel(Base):
     __tablename__ = "teams"
 
-    id = Column(String, primary_key=True)
-    name = Column(String, nullable=False)
-    created = Column(DateTime, server_default=func.now(), nullable=False)
+    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
+    name = Column(String)
+    created = Column(TIMESTAMP, default=datetime.utcnow)
 
-    # Связь с участниками
-    members = relationship("UserModel", backref="team_association", lazy="dynamic")
+    members_list = relationship("UserModel", back_populates="team")  # связь с пользователями
+
 
 
 # Модель для связей участников команды
