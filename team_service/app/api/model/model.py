@@ -18,7 +18,7 @@ class UserModel(Base):
     birthday = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     
-    # Добавление ссылки на команду с использованием UUID
+    # Ссылка на команду с использованием UUID
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
     # Связь с командой (backref с уникальным именем)
@@ -33,7 +33,7 @@ class TeamModel(Base):
     name = Column(String, nullable=False)
     created = Column(DateTime, server_default=func.now(), nullable=False)
 
-    # Связь с пользователями
+    # Связь с пользователями через обратную связь
     members = relationship("UserModel", backref="user_team", lazy="dynamic")
 
 
