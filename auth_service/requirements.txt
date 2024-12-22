@@ -8,3 +8,4 @@ rabbitmq
 jwt
 asyncpg
 pytz
+PyJWT
