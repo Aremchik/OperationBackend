@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Устанавливаем зависимости
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt --upgrade pip setuptools wheel
 
 # Копируем исходный код
 COPY . .

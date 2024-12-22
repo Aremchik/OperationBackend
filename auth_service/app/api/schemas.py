@@ -1,15 +1,26 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from uuid import UUID as UUIDType, uuid4
+from sqlalchemy import Column, String, Integer, DateTime
 
 class UserSchema(BaseModel):
+    id: UUIDType
     username: str
     name: str
     email: str
-    password: str
-    birthday: str  # Оставляем дату как строку, которую будем конвертировать
-    team_id: Optional[str] = None  # Сделать team_id опциональным, чтобы оно было None по умолчанию
+    status: int
+    birthday: Optional[DateTime]
+    created_at: DateTime
+    team_id: Optional[UUIDType]
 
+    class Config:
+        orm_mode = True
+
+class TeamSchema(BaseModel):
+    id: UUIDType
+    name: str
+    created: DateTime
 
     class Config:
         orm_mode = True
