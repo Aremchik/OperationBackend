@@ -4,15 +4,25 @@ from app.api.database.database import get_db
 from app.api.model.model import UserModel
 from app.api.schemas import UserSchema
 from pydantic import BaseModel
+from uuid import UUID
+from sqlalchemy import select
 
 router = APIRouter()
 
 # Получение пользователя
-@router.get("/users/{user_id}", response_model=UserSchema)
-async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):
-    user = await db.get(UserModel, user_id)
+async def get_user(db: AsyncSession, user_id: str) -> UserSchema:
+    try:
+        # Приведение user_id к UUID
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    result = await db.execute(select(UserModel).where(UserModel.id == user_uuid))
+    user = result.scalar_one_or_none()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 # Создание нового пользователя

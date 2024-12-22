@@ -1,17 +1,39 @@
-from sqlalchemy import Column, String, Integer, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, select
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
+from pydantic import BaseModel
+from typing import Optional
+from uuid import UUID as UUIDType, uuid4
+from datetime import datetime
+
 from app.api.database.database import Base
 
+# UserModel
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     username = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
-    birthday = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    team = Column(String, nullable=True)  # Добавлено поле team, которое может быть NULL
+    birthday = Column(DateTime(timezone=True), nullable=True)  # Дата с часовым поясом
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # Дата с часовым поясом
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
+    team = relationship("TeamModel", back_populates="members")
+
+class TeamModel(Base):
+    __tablename__ = "teams"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String, nullable=False)
+    created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # Дата с часовым поясом
+    members = relationship("UserModel", back_populates="team")
+
+class TeamMemberModel(Base):
+    __tablename__ = "team_members"
+
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
