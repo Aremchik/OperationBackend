@@ -23,6 +23,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register", response_model=UserSchema)
 async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
+    # Приводим дату рождения к UTC здесь для корректности
+    user.birthday = user.validate_birthday(user.birthday)
+    
     existing_user = await db.execute(
         select(UserModel).where(UserModel.username == user.username)
     )
