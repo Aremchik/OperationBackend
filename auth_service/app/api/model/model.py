@@ -5,6 +5,7 @@ from sqlalchemy.sql import func
 from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID as UUIDType, uuid4
+from datetime import datetime as DatetimeType
 
 from app.api.database.database import Base
 
@@ -18,8 +19,8 @@ class UserModel(Base):
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
-    birthday = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    birthday = Column(DatetimeType, nullable=True)
+    created_at = Column(DatetimeType, server_default=func.now(), nullable=False)
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     team = relationship("TeamModel", back_populates="members")
 
@@ -29,7 +30,7 @@ class TeamModel(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, nullable=False)
-    created = Column(DateTime, server_default=func.now(), nullable=False)
+    created = Column(DatetimeType, server_default=func.now(), nullable=False)
     members = relationship("UserModel", back_populates="team")
 
 # TeamMemberModel

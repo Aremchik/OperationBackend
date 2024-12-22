@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.database.database import get_db
 from app.api.schemas import UserSchema, TeamSchema
 from app.api.model.model import UserModel
 from app.api.utils.jwt import create_access_token, verify_token
 from passlib.context import CryptContext
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, select
 from uuid import UUID
+from datetime import datetime as DatetimeType
 from pydantic import BaseModel
-
-router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Token(BaseModel):
     access_token: str
@@ -19,6 +17,9 @@ class Token(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+router = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register", response_model=UserSchema)
 async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
