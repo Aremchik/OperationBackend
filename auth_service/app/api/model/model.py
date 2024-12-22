@@ -21,7 +21,7 @@ class UserModel(Base):
     status = Column(Integer, default=1)  # 1 = Active, 0 = Inactive
     birthday = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
     team = relationship("TeamModel", back_populates="members")
 
 # TeamModel
@@ -37,5 +37,5 @@ class TeamModel(Base):
 class TeamMemberModel(Base):
     __tablename__ = "team_members"
 
-    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
