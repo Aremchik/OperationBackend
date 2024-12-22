@@ -7,3 +7,4 @@ aiosqlite
 rabbitmq
 asyncpg
 pytz
+pika
