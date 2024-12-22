@@ -16,6 +16,7 @@ class UserSchema(BaseModel):
     created_at: datetime
     team_id: Optional[UUIDType]
 
+
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
