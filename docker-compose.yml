@@ -11,6 +11,15 @@ services:
       - auth_service
       - user_service
       - team_service
+      - rabbitmq
+      - postgres
+    command: >
+      sh -c "until curl -s postgres:5432; do echo 'Waiting for postgres'; sleep 5; done &&
+      until curl -s rabbitmq:5672; do echo 'Waiting for rabbitmq'; sleep 5; done &&
+      until curl -s user_service:8000; do echo 'Waiting for user_service'; sleep 5; done &&
+      until curl -s auth_service:8000; do echo 'Waiting for auth_service'; sleep 5; done &&
+      until curl -s team_service:8000; do echo 'Waiting for team_service'; sleep 5; done &&
+      nginx -g 'daemon off;'"
 
   user_service:
     build:
