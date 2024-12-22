@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 from uuid import UUID as UUIDType, uuid4
-from sqlalchemy import Column, String, Integer, DateTime
+from datetime import datetime as DatetimeType
 
 class UserSchema(BaseModel):
     id: UUIDType
@@ -10,17 +10,19 @@ class UserSchema(BaseModel):
     name: str
     email: str
     status: int
-    birthday: Optional[DateTime]
-    created_at: DateTime
+    birthday: Optional[DatetimeType]
+    created_at: DatetimeType
     team_id: Optional[UUIDType]
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True
 
 class TeamSchema(BaseModel):
     id: UUIDType
     name: str
-    created: DateTime
+    created: DatetimeType
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True
