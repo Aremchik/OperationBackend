@@ -10,8 +10,8 @@ class UserSchema(BaseModel):
     name: str
     email: str
     status: int
-    birthday: Optional[DatetimeType]
-    created_at: DatetimeType
+    birthday: Optional[datetime]
+    created_at: datetime
     team_id: Optional[UUIDType]
 
     class Config:
@@ -21,7 +21,7 @@ class UserSchema(BaseModel):
 class TeamSchema(BaseModel):
     id: UUIDType
     name: str
-    created: DatetimeType
+    created: datetime
 
     class Config:
         orm_mode = True
