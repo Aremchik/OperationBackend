@@ -10,6 +10,7 @@ class UserSchema(BaseModel):
     name: str
     email: str
     status: int
+    password: Optional[str]  # Add password here to avoid missing attribute error
     birthday: Optional[datetime]
     created_at: datetime
     team_id: Optional[UUIDType]
