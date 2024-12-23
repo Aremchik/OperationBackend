@@ -66,8 +66,6 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
     # Возвращаем команду с участниками
     return await get_team_with_members(db, new_team.id)
 
-
-
 async def get_team_with_members(db: AsyncSession, team_id: UUIDType):
     # Получаем команду с участниками
     result = await db.execute(
