@@ -36,3 +36,4 @@ class TeamSchema(BaseModel):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
+        from_attributes = True  # Ес
