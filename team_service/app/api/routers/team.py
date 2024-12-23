@@ -16,7 +16,7 @@ router = APIRouter()
 async def get_all_teams(db: AsyncSession = Depends(get_db)):
     # Запрос к базе данных для получения всех команд с участниками
     result = await db.execute(
-        select(TeamModel).options(selectinload(TeamModel.members))  # Предварительно загружаем участников
+        select(TeamModel).options(selectinload(TeamModel.members))  # Предварительная загрузка участников
     )
     teams = result.scalars().all()
 
@@ -24,7 +24,7 @@ async def get_all_teams(db: AsyncSession = Depends(get_db)):
     if not teams:
         raise HTTPException(status_code=404, detail="No teams found")
 
-    # Формируем список команд с пользователями
+    # Формируем и возвращаем результат
     return teams  # Возвращаем все команды с участниками
 # Эндпоинт для создания команды
 @router.post("/teams/", response_model=TeamSchema)
@@ -138,7 +138,10 @@ async def get_user_team(username: str, db: AsyncSession = Depends(get_db)):
     if not user.team_id:
         raise HTTPException(status_code=404, detail="User does not belong to any team")
 
-    team_query = await db.execute(select(TeamModel).where(TeamModel.id == user.team_id))
+    # Запрашиваем команду с предзагрузкой участников
+    team_query = await db.execute(
+        select(TeamModel).options(selectinload(TeamModel.members)).where(TeamModel.id == user.team_id)
+    )
     team = team_query.scalar_one_or_none()
 
     if not team:
