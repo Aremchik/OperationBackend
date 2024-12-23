@@ -1,7 +1,9 @@
-from sqlalchemy import Column, String, Integer, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.api.database.database import Base
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import UUID as UUIDType, uuid4
 
 class UserModel(Base):
     __tablename__ = "users"
