@@ -11,12 +11,11 @@ app = FastAPI()
 router = APIRouter()
 
 
-# Эндпоинт для получения всех команд
 @router.get("/teams/", response_model=List[TeamSchema])
 async def get_all_teams(db: AsyncSession = Depends(get_db)):
     # Запрос к базе данных для получения всех команд с участниками
     result = await db.execute(
-        select(TeamModel).options(selectinload(TeamModel.members))
+        select(TeamModel).options(selectinload(TeamModel.members))  # Предварительно загружаем участников
     )
     teams = result.scalars().all()
 

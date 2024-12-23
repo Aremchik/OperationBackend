@@ -31,11 +31,12 @@ class TeamSchema(BaseModel):
     id: UUIDType
     name: str
     created: datetime
+    members: List[UserSchema] = []  # Здесь добавляем список участников команды
 
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
-        from_attributes = True  # Ес
+        from_attributes = True
 
 class CreateTeamSchema(BaseModel):
     name: str
