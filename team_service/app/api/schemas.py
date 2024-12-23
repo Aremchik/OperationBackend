@@ -9,7 +9,7 @@ class UserSchema(BaseModel):
     username: str
     name: str
     email: str
-    password: Optional[str]  # Пароль можно передать при регистрации, но не выводить в ответ
+    password: Optional[str]
     status: int  # 1 = Active, 0 = Inactive
     birthday: Optional[datetime]
     created_at: datetime
@@ -37,7 +37,6 @@ class TeamSchema(BaseModel):
         orm_mode = True
         arbitrary_types_allowed = True
         from_attributes = True
-
 class CreateTeamSchema(BaseModel):
     name: str
     members: List[str]  # Список usernames участников
