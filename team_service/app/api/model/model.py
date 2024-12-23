@@ -21,7 +21,6 @@ class UserModel(Base):
 
 class TeamModel(Base):
     __tablename__ = "teams"
-
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, nullable=False)
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # Дата с часовым поясом
