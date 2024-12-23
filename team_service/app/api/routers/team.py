@@ -91,6 +91,7 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
     )
     existing_member = existing_member_query.scalar_one_or_none()
 
+
     if existing_member:
         # Если участник уже в команде, можно вернуть соответствующее сообщение
         raise HTTPException(status_code=400, detail="User is already part of this team")
