@@ -29,42 +29,35 @@ async def get_all_teams(db: AsyncSession = Depends(get_db)):
 # Эндпоинт для создания команды
 @router.post("/teams/", response_model=TeamSchema)
 async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)):
-    # Создаем команду
     new_team = TeamModel(name=team.name)
     db.add(new_team)
     await db.commit()
     await db.refresh(new_team)
 
-    # Словарь для хранения уникальных участников
     unique_members = set()
 
     for username in team.members:
-        # Ищем пользователя по username
         user_query = await db.execute(select(UserModel).where(UserModel.username == username))
         user = user_query.scalar_one_or_none()
 
         if user:
-            # Добавляем только уникальных участников
             if user.id not in unique_members:
-                unique_members.add(user.id)  # Добавляем в множество для уникальности
+                unique_members.add(user.id)
 
-                # Проверяем, существует ли эта запись в team_members
                 member_query = await db.execute(
                     select(TeamMemberModel).where(TeamMemberModel.team_id == new_team.id, TeamMemberModel.user_id == user.id)
                 )
-                
                 if member_query.scalar_one_or_none() is None:
-                    # Добавляем участника команды в базу данных только если его ещё нет
                     new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user.id)
                     db.add(new_team_member)
 
-                # Обновляем поле team_id у пользователя
-                user.team_id = new_team.id  # Устанавливаем новый team_id
+                # Обновление team_id у пользователя
+                user.team_id = new_team.id
+                db.add(user)  # Добавляем пользователя в сессию для фиксации изменений
 
     await db.commit()
-
-    # Возвращаем команду с участниками
     return await get_team_with_members(db, new_team.id)
+
 
 async def get_team_with_members(db: AsyncSession, team_id: UUIDType):
     # Получаем команду с участниками
@@ -88,25 +81,23 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    # Ищем текущую команду пользователя, чтобы обновить team_id
-    existing_member_query = await db.execute(
-        select(TeamMemberModel).where(TeamMemberModel.user_id == user.id)
-    )
-    current_team_member = existing_member_query.scalar_one_or_none()
+    member_query = await db.execute(select(TeamMemberModel).where(TeamMemberModel.user_id == user.id))
+    current_team_member = member_query.scalar_one_or_none()
 
-    # Обновляем team_id для пользователя
     if current_team_member:
-        # Если у пользователя уже есть команда, обновим новую команду
-        current_team_member.team_id = team.id  # Устанавливаем новое team_id
+        current_team_member.team_id = team.id  # Обновляем team_id
     else:
-        # Добавляем нового участника в команду
         new_team_member = TeamMemberModel(team_id=team.id, user_id=user.id)
         db.add(new_team_member)
 
-    await db.commit()
-    await db.refresh(user)  # Обновляем объект пользователя
+    # Обновляем team_id у пользователя
+    user.team_id = team.id
+    db.add(user)
 
+    await db.commit()
+    await db.refresh(user)  # Обновляем объект в памяти
     return user
+
 
 
 
@@ -119,7 +110,6 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Находим запись о членстве команды
     team_member_query = await db.execute(
         select(TeamMemberModel).where(TeamMemberModel.user_id == user.id, TeamMemberModel.team_id == team_id)
     )
@@ -127,16 +117,17 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     if not team_member:
         raise HTTPException(status_code=404, detail="User is not part of this team")
 
-    # Удаляем пользователся из записи TeamMemberModel
+    # Удаляем запись из TeamMemberModel
     await db.delete(team_member)
 
-    # Также следует очищать поле team_id у пользователя
+    # Очищаем team_id у пользователя
     user.team_id = None
+    db.add(user)
 
     await db.commit()
-    await db.refresh(user)  # Обновляем объект пользователя
-
+    await db.refresh(user)
     return user
+
 
 
 # Получение команды конкретного пользователя
