@@ -8,3 +8,4 @@ rabbitmq
 asyncpg
 pytz
 PyJWT
+pika
