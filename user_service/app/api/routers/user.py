@@ -23,13 +23,6 @@ async def get_user(user_id: str, db: AsyncSession = Depends(get_db)) -> UserSche
     
     return UserSchema.from_orm(user)
 
-@router.post("/users/", response_model=UserSchema)
-async def create_user(user: UserSchema, db: AsyncSession = Depends(get_db)):
-    user_model = UserModel(**user.dict(exclude={"password"}))  # Исключаем пароль, если он не нужен при создании
-    db.add(user_model)
-    await db.commit()
-    await db.refresh(user_model)
-    return UserSchema.from_orm(user_model)
 
 @router.put("/users/{user_id}", response_model=UserSchema)
 async def update_user(user_id: str, user: UserSchema, db: AsyncSession = Depends(get_db)):

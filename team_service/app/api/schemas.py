@@ -1,33 +1,39 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
-
-class TeamSchema(BaseModel):
-    id: str
-    name: str
-    created: datetime
-    members: List[str] = []  # Здесь можно использовать пользовательские id или UserSchema, если они доступны.
-
-    class Config:
-        orm_mode = True
+from typing import Optional
+from uuid import UUID as UUIDType, uuid4
+from datetime import datetime as DatetimeType
+import pytz  # Импортируем pytz для работы с часовыми поясами
 
 class UserSchema(BaseModel):
-    id: str
+    id: UUIDType
     username: str
     name: str
     email: str
-    password: str
-    status: int
-    birthday: datetime
+    password: Optional[str]  # Пароль можно передать при регистрации, но не выводить в ответ
+    status: int  # 1 = Active, 0 = Inactive
+    birthday: Optional[datetime]
     created_at: datetime
-    team: Optional[str] = None  # Добавлено поле team с значением None по умолчанию
+    team_id: Optional[UUIDType]
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True
+        from_attributes = True  # Эта строка необходима для метода from_orm
 
-class CreateTeamSchema(BaseModel):
+    @classmethod
+    def validate_birthday(cls, birthday: Optional[datetime]):
+        if birthday is not None:
+            # Приводим дату к часовому поясу UTC
+            return birthday.astimezone(pytz.UTC)
+        return birthday
+
+class TeamSchema(BaseModel):
+    id: UUIDType
     name: str
-    members: List[str]  # Список usernames участников
+    created: datetime
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True
+        from_attributes = True  # Ес
