@@ -41,7 +41,7 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
         missing_ids = set(team.members) - {user.id for user in users}
         raise HTTPException(status_code=404, detail=f"Some users not found: {', '.join(map(str, missing_ids))}")
 
-    # Создаём команду
+    # Создаем команду
     new_team = TeamModel(name=team.name)
     db.add(new_team)
     await db.commit()
@@ -55,7 +55,7 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
     await db.commit()
 
     # Возвращаем команду с участниками
-    new_team.members = team.members  # Обновляем список участников
+    new_team.members = team.members  # Дополним список участников
     return new_team
 
 # Добавление пользователя в команду
