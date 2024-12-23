@@ -1,15 +1,8 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, select
+from sqlalchemy import Column, String, Integer, DateTime, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from pydantic import BaseModel
-from typing import Optional
-from uuid import UUID as UUIDType, uuid4
-from datetime import datetime
-
 from app.api.database.database import Base
 
-# UserModel
 class UserModel(Base):
     __tablename__ = "users"
 
@@ -23,17 +16,3 @@ class UserModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # Дата с часовым поясом
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
     team = relationship("TeamModel", back_populates="members")
-
-class TeamModel(Base):
-    __tablename__ = "teams"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    name = Column(String, nullable=False)
-    created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # Дата с часовым поясом
-    members = relationship("UserModel", back_populates="team")
-
-class TeamMemberModel(Base):
-    __tablename__ = "team_members"
-
-    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="CASCADE"), primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
