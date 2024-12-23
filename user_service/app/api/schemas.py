@@ -10,21 +10,21 @@ class UserSchema(BaseModel):
     username: str
     name: str
     email: str
-    status: int
-    password: Optional[str]  # Add password here to avoid missing attribute error
+    password: Optional[str]  # Пароль можно передать при регистрации, но не выводить в ответ
+    status: int  # 1 = Active, 0 = Inactive
     birthday: Optional[datetime]
     created_at: datetime
-    team_id: Optional[UUIDType] = None
-
+    team_id: Optional[UUIDType]
 
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
+        from_attributes = True  # Эта строка необходима для метода from_orm
 
     @classmethod
     def validate_birthday(cls, birthday: Optional[datetime]):
         if birthday is not None:
-            # Приводим дату ко всем к одному часовому поясу UTC
+            # Приводим дату к часовому поясу UTC
             return birthday.astimezone(pytz.UTC)
         return birthday
 

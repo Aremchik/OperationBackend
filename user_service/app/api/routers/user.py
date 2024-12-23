@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.database.database import get_db
 from app.api.model.model import UserModel
 from app.api.schemas import UserSchema
-from pydantic import BaseModel
 from uuid import UUID
 from sqlalchemy import select
 
@@ -26,7 +25,7 @@ async def get_user(user_id: str, db: AsyncSession = Depends(get_db)) -> UserSche
 
 @router.post("/users/", response_model=UserSchema)
 async def create_user(user: UserSchema, db: AsyncSession = Depends(get_db)):
-    user_model = UserModel(**user.dict())
+    user_model = UserModel(**user.dict(exclude={"password"}))  # Исключаем пароль, если он не нужен при создании
     db.add(user_model)
     await db.commit()
     await db.refresh(user_model)
@@ -44,7 +43,7 @@ async def update_user(user_id: str, user: UserSchema, db: AsyncSession = Depends
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    for key, value in user.dict().items():
+    for key, value in user.dict(exclude={"id", "created_at", "password"}).items():  # Исключаем id и created_at от обновления
         setattr(existing_user, key, value)
 
     await db.commit()
