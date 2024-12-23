@@ -28,20 +28,6 @@ async def get_all_teams(db: AsyncSession = Depends(get_db)):
 # Эндпоинт для создания команды
 @router.post("/teams/", response_model=TeamSchema)
 async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)):
-    # Проверяем существование команды с таким именем
-    existing_team_query = await db.execute(select(TeamModel).where(TeamModel.name == team.name))
-    existing_team = existing_team_query.scalar_one_or_none()
-    if existing_team:
-        raise HTTPException(status_code=400, detail="Team with this name already exists")
-
-    # Проверяем существование участников
-    user_query = await db.execute(select(UserModel).where(UserModel.id.in_(team.members)))
-    users = user_query.scalars().all()
-
-    if len(users) != len(team.members):
-        missing_ids = set(team.members) - {user.id for user in users}
-        raise HTTPException(status_code=404, detail=f"Some users not found: {', '.join(map(str, missing_ids))}")
-
     # Создаем команду
     new_team = TeamModel(name=team.name)
     db.add(new_team)
@@ -49,15 +35,37 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
     await db.refresh(new_team)
 
     # Добавляем участников в команду
-    for user_id in team.members:
-        new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user_id)
-        db.add(new_team_member)
+    existing_user_ids = set()
+    for username in team.members:
+        user_query = await db.execute(select(UserModel).where(UserModel.username == username))
+        user = user_query.scalar_one_or_none()
+
+        if user:
+            existing_user_ids.add(user.id)  # Сохраняем уже существующих пользователей
+
+            # Проверяем, существует ли эта запись в team_members
+            member_query = await db.execute(
+                select(TeamMemberModel).where(TeamMemberModel.team_id == new_team.id, TeamMemberModel.user_id == user.id)
+            )
+            existing_member = member_query.scalar_one_or_none()
+
+            if not existing_member:
+                # Добавляем только если участник еще не добавлен
+                new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user.id)
+                db.add(new_team_member)
 
     await db.commit()
 
     # Возвращаем команду с участниками
-    new_team.members = team.members  # Дополним список участников
-    return new_team
+    return await get_team_with_members(db, new_team.id)
+
+async def get_team_with_members(db: AsyncSession, team_id: UUIDType):
+    # Получаем команду с участниками
+    result = await db.execute(
+        select(TeamModel).options(selectinload(TeamModel.members)).where(TeamModel.id == team_id)
+    )
+    team_with_members = result.scalar_one_or_none()
+    return team_with_members
 
 # Добавление пользователя в команду
 @router.patch("/users/{username}/team/{team_id}", response_model=UserSchema)
