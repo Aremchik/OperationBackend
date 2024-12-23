@@ -10,6 +10,7 @@ from sqlalchemy import select
 router = APIRouter()
 
 # Получение пользователя
+@router.get("/users/{user_id}", response_model=UserSchema)
 async def get_user(db: AsyncSession, user_id: str) -> UserSchema:
     try:
         # Приведение user_id к UUID
