@@ -124,6 +124,7 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     user.team_id = None
     db.add(user)
 
+
     await db.commit()
     await db.refresh(user)
     return user
