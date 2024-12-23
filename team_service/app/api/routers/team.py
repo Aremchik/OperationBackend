@@ -1,11 +1,11 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from typing import List
-from app.api.database.database import get_db  # Импорт вашей базы данных
+from app.api.database.database import get_db 
 from app.api.model.model import UserModel, TeamModel, TeamMemberModel
-from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema  # Ваши схемы
-
+from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema  
 
 app = FastAPI()
 router = APIRouter()
@@ -14,23 +14,14 @@ router = APIRouter()
 @router.get("/teams/", response_model=List[TeamSchema])
 async def get_all_teams(db: AsyncSession = Depends(get_db)):
     # Запрос к базе данных для получения всех команд
-    result = await db.execute(select(TeamModel))
+    result = await db.execute(select(TeamModel).options(selectinload(TeamModel.members)))  # Уберите join на TeamMemberModel
     teams = result.scalars().all()
 
     # Если нет команд, возвращаем ошибку
     if not teams:
         raise HTTPException(status_code=404, detail="No teams found")
 
-    # Запрашиваем участников для каждой команды через связь с TeamMemberModel
-    for team in teams:
-        team_members_query = await db.execute(
-            select(UserModel.username).join(TeamMemberModel).where(TeamMemberModel.team == team.id)
-        )
-        team.members = team_members_query.scalars().all()  # Заполняем поле members
-
-    # Возвращаем все команды с участниками
-    return teams
-
+    return teams  # Возвращаем все команды с участниками
 
 # Эндпоинт для создания команды
 @router.post("/teams/", response_model=TeamSchema)
@@ -68,12 +59,9 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
     )
     team_members = team_members_query.scalars().all()
 
-    # Обновляем команду с участниками, добавляем их в поле 'members'
     new_team.members = team_members
 
-    # Возвращаем команду с участниками
     return new_team
-
 
 # Добавление пользователя в команду
 @router.patch("/users/{username}/team/{team_id}", response_model=UserSchema)
@@ -96,7 +84,6 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
 
     return user
 
-
 # Удаление пользователя из команды
 @router.delete("/users/{username}/team/{team_id}", response_model=UserSchema)
 async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = Depends(get_db)):
@@ -115,8 +102,8 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     await db.delete(team_member)
     await db.commit()
     await db.refresh(user)
-    return user
 
+    return user
 
 # Получение команды конкретного пользователя
 @router.get("/users/{username}/team", response_model=TeamSchema)
