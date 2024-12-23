@@ -73,6 +73,7 @@ async def get_team_with_members(db: AsyncSession, team_id: UUIDType):
     return team_with_members
 
 # Добавление пользователя в команду
+# Добавление пользователя в команду
 @router.patch("/users/{username}/team/{team_id}", response_model=UserSchema)
 async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depends(get_db)):
     user_query = await db.execute(select(UserModel).where(UserModel.username == username))
@@ -85,26 +86,29 @@ async def add_user_to_team(username: str, team_id: str, db: AsyncSession = Depen
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    # Проверка на дубликаты перед добавлением
+    # Ищем текущую команду пользователя, чтобы обновить team_id
     existing_member_query = await db.execute(
-        select(TeamMemberModel).where(TeamMemberModel.user_id == user.id, TeamMemberModel.team_id == team.id)
+        select(TeamMemberModel).where(TeamMemberModel.user_id == user.id)
     )
-    existing_member = existing_member_query.scalar_one_or_none()
+    current_team_member = existing_member_query.scalar_one_or_none()
 
+    # Обновляем team_id для пользователя
+    if current_team_member:
+        # Если у пользователя уже есть команда, обновим новую команду
+        current_team_member.team_id = team.id  # Устанавливаем новое team_id
+    else:
+        # Добавляем нового участника в команду
+        new_team_member = TeamMemberModel(team_id=team.id, user_id=user.id)
+        db.add(new_team_member)
 
-    if existing_member:
-        # Если участник уже в команде, можно вернуть соответствующее сообщение
-        raise HTTPException(status_code=400, detail="User is already part of this team")
-
-    # Добавляем пользователя в таблицу TeamMemberModel
-    new_team_member = TeamMemberModel(team_id=team.id, user_id=user.id)
-    db.add(new_team_member)
     await db.commit()
-    await db.refresh(user)
+    await db.refresh(user)  # Обновляем объект пользователя
 
     return user
 
 
+
+# Удаление пользователя из команды
 # Удаление пользователя из команды
 @router.delete("/users/{username}/team/{team_id}", response_model=UserSchema)
 async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = Depends(get_db)):
@@ -113,6 +117,7 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Находим запись о членстве команды
     team_member_query = await db.execute(
         select(TeamMemberModel).where(TeamMemberModel.user_id == user.id, TeamMemberModel.team_id == team_id)
     )
@@ -120,11 +125,17 @@ async def remove_user_from_team(username: str, team_id: str, db: AsyncSession = 
     if not team_member:
         raise HTTPException(status_code=404, detail="User is not part of this team")
 
+    # Удаляем пользователся из записи TeamMemberModel
     await db.delete(team_member)
+
+    # Также следует очищать поле team_id у пользователя
+    user.team_id = None
+
     await db.commit()
-    await db.refresh(user)
+    await db.refresh(user)  # Обновляем объект пользователя
 
     return user
+
 
 # Получение команды конкретного пользователя
 @router.get("/users/{username}/team", response_model=TeamSchema)
