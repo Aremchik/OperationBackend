@@ -14,16 +14,18 @@ router = APIRouter()
 # Эндпоинт для получения всех команд
 @router.get("/teams/", response_model=List[TeamSchema])
 async def get_all_teams(db: AsyncSession = Depends(get_db)):
-    # Запрос к базе данных для получения всех команд
-    result = await db.execute(select(TeamModel).options(selectinload(TeamModel.members)))  # Уберите join на TeamMemberModel
+    # Запрос к базе данных для получения всех команд с участниками
+    result = await db.execute(
+        select(TeamModel).options(selectinload(TeamModel.members))
+    )
     teams = result.scalars().all()
 
     # Если нет команд, возвращаем ошибку
     if not teams:
         raise HTTPException(status_code=404, detail="No teams found")
 
+    # Формируем список команд с пользователями
     return teams  # Возвращаем все команды с участниками
-
 # Эндпоинт для создания команды
 @router.post("/teams/", response_model=TeamSchema)
 async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)):
