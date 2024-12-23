@@ -72,6 +72,12 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=pass
+    auth_service:
+      environment:
+        - RABBIT_HOST=rabbitmq
+    team_service:
+      environment:
+        - RABBIT_HOST=rabbitmq
 
   postgres:
     image: postgres:15

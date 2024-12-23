@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from uuid import UUID
 from datetime import datetime as DatetimeType
 from pydantic import BaseModel
+from app.api.rabbitmq.producer import publish_message
 
 class Token(BaseModel):
     access_token: str
@@ -23,7 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register", response_model=UserSchema)
 async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
-    # Приводим дату рождения к UTC здесь для корректности
+
     user.birthday = user.validate_birthday(user.birthday)
     
     existing_user = await db.execute(
@@ -40,11 +41,16 @@ async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
         email=user.email,
         password=hashed_password,
         birthday=user.birthday,
-        team_id=None,  # По умолчанию team_id = None
+        team_id=None, 
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    publish_message(
+        exchange="user_exchange",
+        routing_key="user.registered",
+        message={"username": user.username, "email": user.email, "action": "User Registered"}
+    )
     return new_user
 
 @router.post("/login", response_model=Token)

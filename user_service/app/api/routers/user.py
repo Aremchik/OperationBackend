@@ -36,7 +36,7 @@ async def update_user(user_id: str, user: UserSchema, db: AsyncSession = Depends
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    for key, value in user.dict(exclude={"id", "created_at", "password"}).items():  # Исключаем id и created_at от обновления
+    for key, value in user.dict(exclude={"id", "created_at", "password"}).items(): 
         setattr(existing_user, key, value)
 
     await db.commit()

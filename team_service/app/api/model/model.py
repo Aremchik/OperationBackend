@@ -17,15 +17,14 @@ class UserModel(Base):
     birthday = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
-    team = relationship("TeamModel", back_populates="members")  # Измените на back_populates
-
-# Модель команды
+    team = relationship("TeamModel", back_populates="members")  
+    
 class TeamModel(Base):
     __tablename__ = "teams"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, nullable=False)
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    members = relationship("UserModel", back_populates="team")  # Измените на back_populates
+    members = relationship("UserModel", back_populates="team")  
 
 class TeamMemberModel(Base):
     __tablename__ = "team_members"

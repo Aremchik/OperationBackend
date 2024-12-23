@@ -14,7 +14,7 @@ async def process_message(ch, method, properties, body):
         team_id = message.get("team_id")
 
         if action == "add_user" and user_id and team_id:
-            async with get_db() as db:  # Получаем сессию
+            async with get_db() as db: 
                 user = await db.get(UserModel, user_id)
                 if user:
                     user.team = team_id
@@ -29,7 +29,6 @@ def start_consuming():
     connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
     channel = connection.channel()
 
-    # Объявление обменника и привязки очереди
     channel.exchange_declare(exchange="team_exchange", exchange_type="direct")
     queue = channel.queue_declare(queue="team_user_update_queue", durable=True)
     channel.queue_bind(exchange="team_exchange", queue=queue.method.queue, routing_key="team.user_update")

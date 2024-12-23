@@ -2,6 +2,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api.routers import team
 from app.api.database.database import engine, Base
+from threading import Thread
+from app.api.rabbitmq.consumer import start_consumer
+
+def start_rabbitmq_listener():
+    Thread(target=start_consumer, daemon=True).start()
+
+start_rabbitmq_listener()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -9,7 +16,6 @@ async def lifespan(app: FastAPI):
     Управление жизненным циклом приложения.
     """
     async with engine.begin() as connection:
-        # Убедитесь, что таблицы создаются только один раз
         await connection.run_sync(Base.metadata.create_all)
 
     try:

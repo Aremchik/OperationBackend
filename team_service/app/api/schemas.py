@@ -10,7 +10,7 @@ class UserSchema(BaseModel):
     name: str
     email: str
     password: Optional[str]
-    status: int  # 1 = Active, 0 = Inactive
+    status: int 
     birthday: Optional[datetime]
     created_at: datetime
     team_id: Optional[UUIDType]
@@ -18,12 +18,11 @@ class UserSchema(BaseModel):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
-        from_attributes = True  # Эта строка необходима для метода from_orm
+        from_attributes = True 
 
     @classmethod
     def validate_birthday(cls, birthday: Optional[datetime]):
         if birthday is not None:
-            # Приводим дату к часовому поясу UTC
             return birthday.astimezone(pytz.UTC)
         return birthday
 
@@ -31,7 +30,7 @@ class TeamSchema(BaseModel):
     id: UUIDType
     name: str
     created: datetime
-    members: List[UserSchema] = []  # Здесь добавляем список участников команды
+    members: List[UserSchema] = [] 
 
     class Config:
         orm_mode = True
@@ -39,7 +38,7 @@ class TeamSchema(BaseModel):
         from_attributes = True
 class CreateTeamSchema(BaseModel):
     name: str
-    members: List[str]  # Список usernames участников
+    members: List[str] 
 
     class Config:
         orm_mode = True

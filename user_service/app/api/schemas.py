@@ -3,15 +3,15 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID as UUIDType, uuid4
 from datetime import datetime as DatetimeType
-import pytz  # Импортируем pytz для работы с часовыми поясами
+import pytz  
 
 class UserSchema(BaseModel):
     id: UUIDType
     username: str
     name: str
     email: str
-    password: Optional[str]  # Пароль можно передать при регистрации, но не выводить в ответ
-    status: int  # 1 = Active, 0 = Inactive
+    password: Optional[str] 
+    status: int  
     birthday: Optional[datetime]
     created_at: datetime
     team_id: Optional[UUIDType]
@@ -19,12 +19,11 @@ class UserSchema(BaseModel):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
-        from_attributes = True  # Эта строка необходима для метода from_orm
+        from_attributes = True  
 
     @classmethod
     def validate_birthday(cls, birthday: Optional[datetime]):
         if birthday is not None:
-            # Приводим дату к часовому поясу UTC
             return birthday.astimezone(pytz.UTC)
         return birthday
 
@@ -36,4 +35,4 @@ class TeamSchema(BaseModel):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
-        from_attributes = True  # Ес
+        from_attributes = True  
