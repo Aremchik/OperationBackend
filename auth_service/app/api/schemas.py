@@ -14,7 +14,7 @@ class UserSchema(BaseModel):
     password: Optional[str]  # Add password here to avoid missing attribute error
     birthday: Optional[datetime]
     created_at: datetime
-    team_id: Optional[UUIDType]
+    team_id: Optional[UUIDType] = None
 
 
     class Config:

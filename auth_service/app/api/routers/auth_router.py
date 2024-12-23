@@ -40,7 +40,7 @@ async def register(user: UserSchema, db: AsyncSession = Depends(get_db)):
         email=user.email,
         password=hashed_password,
         birthday=user.birthday,
-        team_id=user.team_id,
+        team_id=None,  # По умолчанию team_id = None
     )
     db.add(new_user)
     await db.commit()
