@@ -18,6 +18,7 @@ class UserModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
     team = relationship("TeamModel", back_populates="members")
+    
 
 class TeamModel(Base):
     __tablename__ = "teams"
