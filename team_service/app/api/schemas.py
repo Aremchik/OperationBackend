@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
+import pytz 
 from uuid import UUID as UUIDType, uuid4
-from datetime import datetime as DatetimeType
-import pytz  # Импортируем pytz для работы с часовыми поясами
 
 class UserSchema(BaseModel):
     id: UUIDType
@@ -37,3 +36,10 @@ class TeamSchema(BaseModel):
         orm_mode = True
         arbitrary_types_allowed = True
         from_attributes = True  # Ес
+
+class CreateTeamSchema(BaseModel):
+    name: str
+    members: List[str]  # Список usernames участников
+
+    class Config:
+        orm_mode = True
