@@ -10,6 +10,7 @@ from app.api.schemas import UserSchema, TeamSchema, CreateTeamSchema
 app = FastAPI()
 router = APIRouter()
 
+
 # Эндпоинт для получения всех команд
 @router.get("/teams/", response_model=List[TeamSchema])
 async def get_all_teams(db: AsyncSession = Depends(get_db)):
@@ -33,12 +34,12 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
         raise HTTPException(status_code=400, detail="Team with this name already exists")
 
     # Проверяем существование участников
-    user_query = await db.execute(select(UserModel).where(UserModel.username.in_(team.members)))
+    user_query = await db.execute(select(UserModel).where(UserModel.id.in_(team.members)))
     users = user_query.scalars().all()
 
     if len(users) != len(team.members):
-        missing_users = set(team.members) - {user.username for user in users}
-        raise HTTPException(status_code=404, detail=f"Some users not found: {', '.join(missing_users)}")
+        missing_ids = set(team.members) - {user.id for user in users}
+        raise HTTPException(status_code=404, detail=f"Some users not found: {', '.join(map(str, missing_ids))}")
 
     # Создаём команду
     new_team = TeamModel(name=team.name)
@@ -47,20 +48,14 @@ async def create_team(team: CreateTeamSchema, db: AsyncSession = Depends(get_db)
     await db.refresh(new_team)
 
     # Добавляем участников в команду
-    for user in users:
-        new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user.id)
+    for user_id in team.members:
+        new_team_member = TeamMemberModel(team_id=new_team.id, user_id=user_id)
         db.add(new_team_member)
 
     await db.commit()
 
-    # Получаем всех участников команды через связь с таблицей TeamMemberModel
-    team_members_query = await db.execute(
-        select(UserModel.username).join(TeamMemberModel).where(TeamMemberModel.team_id == new_team.id)
-    )
-    team_members = team_members_query.scalars().all()
-
-    new_team.members = team_members
-
+    # Возвращаем команду с участниками
+    new_team.members = team.members  # Обновляем список участников
     return new_team
 
 # Добавление пользователя в команду
