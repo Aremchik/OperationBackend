@@ -9,11 +9,9 @@ from sqlalchemy import select
 
 router = APIRouter()
 
-# Получение пользователя
 @router.get("/users/{user_id}", response_model=UserSchema)
-async def get_user(db: AsyncSession, user_id: str) -> UserSchema:
+async def get_user(user_id: str, db: AsyncSession = Depends(get_db)) -> UserSchema:
     try:
-        # Приведение user_id к UUID
         user_uuid = UUID(user_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -23,22 +21,26 @@ async def get_user(db: AsyncSession, user_id: str) -> UserSchema:
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    return UserSchema.from_orm(user)
 
-    return user
-
-# Создание нового пользователя
 @router.post("/users/", response_model=UserSchema)
 async def create_user(user: UserSchema, db: AsyncSession = Depends(get_db)):
     user_model = UserModel(**user.dict())
     db.add(user_model)
     await db.commit()
     await db.refresh(user_model)
-    return user_model
+    return UserSchema.from_orm(user_model)
 
-# Обновление информации о пользователе
 @router.put("/users/{user_id}", response_model=UserSchema)
 async def update_user(user_id: str, user: UserSchema, db: AsyncSession = Depends(get_db)):
-    existing_user = await db.get(UserModel, user_id)
+    try:
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    existing_user = await db.get(UserModel, user_uuid)
+
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -47,12 +49,17 @@ async def update_user(user_id: str, user: UserSchema, db: AsyncSession = Depends
 
     await db.commit()
     await db.refresh(existing_user)
-    return existing_user
+    return UserSchema.from_orm(existing_user)
 
-# Удаление пользователя
 @router.delete("/users/{user_id}", response_model=dict)
 async def delete_user(user_id: str, db: AsyncSession = Depends(get_db)):
-    user = await db.get(UserModel, user_id)
+    try:
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    user = await db.get(UserModel, user_uuid)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
